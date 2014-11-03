@@ -2,11 +2,11 @@
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
-int startTime;
+unsigned long startTime;
 int timeInterval = 5000;
 boolean newValue = false;
 
-int speakerPin = 12;
+int speakerPin = 3;
 int buttonPin = 13;
 int sensorPin = A1;
 
@@ -82,7 +82,7 @@ void loop() {
   if(millis() > startTime+timeInterval) {
     if(newValue) {
       beep();
-
+      
       lcd.setCursor(0,0);
       lcd.clear();
       lcd.print("Warten...");
@@ -137,21 +137,23 @@ void beep() {
 }
 
 void colorMeterWithValue(int value) {
-  //should light up all leds one by one
   int pause = 300; //ms
-
-  reg2 = data_reg2[0];
-  for(int start=9; start<=16; start++) {
+  
+  int leds = value/100;
+  if(leds <= 8) {
+    reg2 = data_reg2[0]; //turn last two leds off
+    for(int start = 9;start<=9+leds;start++) { //turn 1-8 on based on value
     reg1 = data_reg1[start];
     digitalWrite(latchPin, 0);
     shiftOut(dataPin, clockPin, reg2);
     shiftOut(dataPin, clockPin, reg1);
     digitalWrite(latchPin, 1);
     delay(pause);
+    }
   }
-
-  reg1 = data_reg1[16];
-  for(int start=3; start<=4; start++) {
+  else {
+    reg1 = data_reg1[16]; //turn first 8 leds on
+  for(int start=3; start<=3+leds-9; start++) { //turn on 9 or 10 on based on value 
     reg2 = data_reg2[start];
     digitalWrite(latchPin, 0);
     shiftOut(dataPin, clockPin, reg2);
@@ -159,4 +161,6 @@ void colorMeterWithValue(int value) {
     digitalWrite(latchPin, 1);
     delay(pause);
   }
+ }
+ 
 }
