@@ -21,6 +21,8 @@ byte data_reg2[5];
 byte reg1;
 byte reg2;
 
+int sensorValue = 0;
+
 void setup()
 {
   lcd.begin(16, 2);
@@ -70,9 +72,16 @@ void loop() {
   shiftOut(dataPin, clockPin, reg1);
   digitalWrite(latchPin, 1);
   delay(1);
+  
+  int tempSensorValue = analogRead(sensorPin);
+  Serial.println(tempSensorValue);
+  if(tempSensorValue > sensorValue) {
+      sensorValue = tempSensorValue;
+   }
 
   if(digitalRead(buttonPin) == HIGH) {
     startTime = millis();
+    sensorValue = 0;
     lcd.clear();
     lcd.print("Jetzt 5s lang");
     lcd.setCursor(0,1);
@@ -80,6 +89,7 @@ void loop() {
     newValue = true;
   }
   if(millis() > startTime+timeInterval) {
+    
     if(newValue) {
       beep();
       
@@ -87,8 +97,10 @@ void loop() {
       lcd.clear();
       lcd.print("Warten...");
 
-      int sensorValue = analogRead(sensorPin);
       Serial.println(sensorValue);
+      lcd.setCursor(0,0);
+      lcd.clear();
+      lcd.print(sensorValue);
       colorMeterWithValue(sensorValue);
       delay(timeInterval);
 
